@@ -26,3 +26,4 @@ class RegisterUserView(generics.ListCreateAPIView):
             if(UNIQUE_CONSTRAINT in e.args[0].lower()):
                 return ResponseBuilder.get_response(message=USER_NAME_EXISTS, status=status.HTTP_409_CONFLICT)
             return ResponseBuilder.get_response(message=e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
