@@ -36,6 +36,7 @@ class Bonus(models.Model):
     class Meta:
         verbose_name_plural = 'Bonuses'
 
+
 class Reservation(models.Model):
     start = models.DateTimeField(blank=False, null=False)
     end = models.DateTimeField(blank=False, null=False)
@@ -43,3 +44,11 @@ class Reservation(models.Model):
     owner = models.OneToOneField(to=Profile, on_delete=models.CASCADE)
     no_of_people = models.IntegerField(default=1, null=False, blank=False)
     bonus = models.ForeignKey(to=Bonus, on_delete=models.PROTECT)
+
+
+class Occupation_Past_Data(models.Model):
+    timestamp = models.DateTimeField()
+    occupation = models.IntegerField()
+    reservations = models.IntegerField()
+    reservations_total_people = models.IntegerField()
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
