@@ -52,3 +52,7 @@ class Occupation_Past_Data(models.Model):
     reservations = models.IntegerField()
     reservations_total_people = models.IntegerField()
     venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Occupation Past Data'
+        verbose_name_plural = 'Occupation Past Datas'
