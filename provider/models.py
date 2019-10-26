@@ -1,8 +1,11 @@
+import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils.timezone import now
 from .util.validators import NOT_NEGATIVE_VALIDATOR
+from .util.enums import WEEKDAYS
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -26,12 +29,14 @@ class Venue(models.Model):
     max_occupation = models.IntegerField(default=0, null=False, blank=False)
     homepage = models.CharField(max_length=1023)
     owner = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
+    reservations_enabled = models.BooleanField(default=False, null=False, blank=False)
+    real_time_queue_enabled = models.BooleanField(default=False, null=False, blank=False)
 
 
 class Bonus(models.Model):
     amount = models.FloatField(validators=NOT_NEGATIVE_VALIDATOR)
     note = models.CharField(max_length=2047)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=now, null=False, blank=False)
 
     class Meta:
         verbose_name_plural = 'Bonuses'
@@ -47,12 +52,26 @@ class Reservation(models.Model):
 
 
 class Occupation_Past_Data(models.Model):
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=now, editable=False)
     occupation = models.IntegerField()
     reservations = models.IntegerField()
     reservations_total_people = models.IntegerField()
-    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE, null=False, blank=False)
 
     class Meta:
         verbose_name = 'Occupation Past Data'
         verbose_name_plural = 'Occupation Past Datas'
+
+
+class Opening_Hours(models.Model):
+    weekday = models.CharField(max_length=10, choices=WEEKDAYS)
+    opening_morning = models.DateTimeField(blank=False, null=False)
+    closing_morning = models.DateTimeField(blank=True, null=True)
+    opening_noon = models.DateTimeField(blank=True, null=True)
+    closing_noon = models.DateTimeField(blank=False, null=False)
+    note = models.CharField(max_length=2047)
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE, null=False, blank=False)
+
+    class Meta:
+        verbose_name = 'Opening Hours'
+        verbose_name_plural = 'Opening Hours'
