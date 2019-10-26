@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from django.contrib.auth.models import User
-from .models import Venue, Address, Profile, Device
+from .models import Venue, Address, Profile, Device, Occupation_Past_Data
 
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -13,6 +13,12 @@ class DeviceSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
+        fields = '__all__'
+
+
+class Occupation_Past_DataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Occupation_Past_Data
         fields = '__all__'
 
 

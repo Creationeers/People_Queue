@@ -51,14 +51,26 @@ class RegisterUserView(APIView):
 
 
 class VenueView(generics.ListCreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = VenueSerializer
     queryset = Venue.objects.all()
+
+
+class VenueViewForAccount(generics.ListAPIView):
+    serializer_class = VenueSerializer
+
+    def get_queryset(self):
+        try:
+            return Venue.objects.filter(owner=Profile.objects.get(user=self.request.user))
+        except ObjectDoesNotExist:
+            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, *args, **kwargs):
         _venueSerializer = VenueSerializer(data=request.data, context={
                                            'owner': Profile.objects.get(user=request.user)}, partial=True)
+        sid = transaction.savepoint()
         if _venueSerializer.is_valid():
-            sid = transaction.savepoint()
             venue = _venueSerializer.save()
             logger.info('Venue \'{}\' created successfully'.format(venue))
             return ResponseBuilder.get_response(message=VENUE_CREATED, status=status.HTTP_201_CREATED)
@@ -68,26 +80,14 @@ class VenueView(generics.ListCreateAPIView):
             return ResponseBuilder.get_response(message=_venueSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-class VenueViewForAccount(generics.ListAPIView):
-    serializer_class = VenueSerializer
-
-    def get_queryset(self):
-        try:
-            return Venue.objects.filter(owner = Profile.objects.get(user = self.request.user))
-        except ObjectDoesNotExist:
-            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
-
-
 class DeviceView(generics.ListAPIView):
     serializer_class = DeviceSerializer
 
     def get_queryset(self):
         try:
-            return Device.objects.filter(venue__owner = Profile.objects.get(user = self.request.user))
+            return Device.objects.filter(venue__owner=Profile.objects.get(user=self.request.user))
         except ObjectDoesNotExist:
             return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
-
 
     def post(self, request, *args, **kwargs):
         try:
@@ -124,7 +124,11 @@ class UpdateOccupationView(APIView):
         try:
             device = Device.objects.get(id=request.data["id"])
             count = request.data["count"]
-            data = Occupation_Past_Data.objects.create(venue=device.venue, occupation=count)
+            data = Occupation_Past_Data.objects.create(
+                venue=device.venue, occupation=count)
+            venue = Venue.objects.get(id = device.venue.id)
+            venue.current_occupation = count
+            venue.save()
             return ResponseBuilder.get_response(message=TIMESTAMP_CREATED, status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist:
