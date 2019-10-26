@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.db.models import Subquery
 from rest_framework import exceptions, permissions, generics
 from rest_framework.views import APIView, status
 from rest_framework.response import Response
@@ -10,7 +11,7 @@ from decouple import config
 from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST, FORBIDDEN, TIMESTAMP_CREATED
 from ..util.builders import ResponseBuilder
 from ..util.constants import UNIQUE_CONSTRAINT
-from ..models import Profile, Venue, Device
+from ..models import Profile, Venue, Device, Occupation_Past_Data
 from ..serializers import VenueSerializer, DeviceSerializer
 
 ResponseBuilder = ResponseBuilder()
@@ -123,6 +124,7 @@ class UpdateOccupationView(APIView):
         try:
             device = Device.objects.get(id=request.data["id"])
             count = request.data["count"]
+            data = Occupation_Past_Data.objects.create(venue=device.venue, occupation=count)
             return ResponseBuilder.get_response(message=TIMESTAMP_CREATED, status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist:

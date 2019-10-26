@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Venue, Bonus, Reservation, Occupation_Past_Data, Opening_Hours, Address
+from .models import Profile, Venue, Bonus, Reservation, Occupation_Past_Data, Opening_Hours, Address, Device
 # Register your models here.
 
 admin.site.register(Profile)
@@ -9,3 +9,4 @@ admin.site.register(Reservation)
 admin.site.register(Occupation_Past_Data)
 admin.site.register(Opening_Hours)
 admin.site.register(Address)
+admin.site.register(Device)
