@@ -66,7 +66,7 @@ class VenueView(generics.CreateAPIView):
             return ResponseBuilder.get_response(message=_venueSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        
+        pass
 
 
 class DetailVenueView(APIView):
