@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from decouple import config
 from datetime import timedelta
 
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY =  config('SECRET', default='#sy1il8^w6nyhhyq@2!$_(jl(5bg(_$4t22x)v$0ad&z&xzad9')
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'drf_yasg',
     'django_rq',
     'provider'
 ]

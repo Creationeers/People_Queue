@@ -1,4 +1,4 @@
-import datetime
+import datetime, uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.utils.timezone import now
 from .util.validators import NOT_NEGATIVE_VALIDATOR, ZIP_VALIDATOR
 from .util.enums import WEEKDAYS
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -27,6 +28,9 @@ class Address(models.Model):
     street = models.CharField(max_length=127, null=False, blank=False)
     house_number = models.IntegerField(blank=False, null=False)
 
+    class Meta:
+        verbose_name_plural = 'Addresses'
+
 
 class Venue(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
@@ -39,6 +43,12 @@ class Venue(models.Model):
     reservations_enabled = models.BooleanField(default=False, null=False, blank=False)
     real_time_queue_enabled = models.BooleanField(default=False, null=False, blank=False)
     address = models.ForeignKey(to=Address, on_delete=models.PROTECT)
+
+
+class Device(models.Model):
+    name = models.CharField(max_length=255, blank=False, null=False)
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 
 class Bonus(models.Model):
@@ -82,7 +92,7 @@ class Opening_Hours(models.Model):
 
     class Meta:
         verbose_name = 'Opening Hours'
-        verbose_name_plural = 'Opening Hours'
+        verbose_name_plural = verbose_name
 
 
 class Conditional_Promotion(models.Model):

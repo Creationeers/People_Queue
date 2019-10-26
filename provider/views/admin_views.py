@@ -6,9 +6,10 @@ from rest_framework import exceptions, permissions, generics
 from rest_framework.views import APIView, status
 from rest_framework.response import Response
 from decouple import config
-from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD
+from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED
 from ..util.builders import ResponseBuilder
 from ..models import Profile, Venue
+from ..serializers import VenueSerializer
 
 ResponseBuilder = ResponseBuilder()
 import logging
@@ -42,9 +43,15 @@ class RegisterUserView(APIView):
             logger.error('Transactional Error: User Creation Failed: {}'.format(e.args[0]))
             return ResponseBuilder.get_response(message=MISSING_FIELD, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-class CreateVenueView(APIView):
+class CreateVenueView(generics.CreateAPIView):
+    serializer_class = VenueSerializer
     def post(self, request, *args, **kwargs):
-        pass
+        _venueSerializer = VenueSerializer(data=request.data)
+        if _venueSerializer.is_valid():
+            sid = transaction.savepoint()
+            _venueSerializer.save()
+            return ResponseBuilder.get_response(message=VENUE_CREATED, status=status.HTTP_201_CREATED)
+        return ResponseBuilder.get_response(message='Failed', status=status.HTTP_400_BAD_REQUEST)
 
 class DetailVenueView(APIView):
     pass
