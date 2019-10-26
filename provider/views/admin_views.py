@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from decouple import config
 from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD
 from ..util.builders import ResponseBuilder
-from ..models import Profile
+from ..models import Profile, Venue
 
 ResponseBuilder = ResponseBuilder()
 import logging
@@ -42,3 +42,12 @@ class RegisterUserView(APIView):
             logger.error('Transactional Error: User Creation Failed: {}'.format(e.args[0]))
             return ResponseBuilder.get_response(message=MISSING_FIELD, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+class CreateVenueView(APIView):
+    def post(self, request, *args, **kwargs):
+        pass
+
+class DetailVenueView(APIView):
+    pass
+
+class OccupationView(APIView):
+    pass

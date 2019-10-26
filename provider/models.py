@@ -75,3 +75,12 @@ class Opening_Hours(models.Model):
     class Meta:
         verbose_name = 'Opening Hours'
         verbose_name_plural = 'Opening Hours'
+
+
+class Conditional_Promotion(models.Model):
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE, null=False, blank=False)
+    start_time = models.TimeField(null=False, blank=False)
+    end_time = models.TimeField(null=False, blank=False)
+    day = models.CharField(max_length=10, choices=WEEKDAYS, null=False, blank=False)
+    note = models.CharField(max_length=2043)
+    trigger_occupation = models.IntegerField(default=0, null=False, blank=False)
