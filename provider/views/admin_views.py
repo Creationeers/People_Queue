@@ -19,8 +19,9 @@ class RegisterUserView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username=request.data['username'], password=request.data['password'], email=request.data['email'])
+            logger.info('User {} Created Successfully'.format(user.username))
             return ResponseBuilder.get_response(message=USER_CREATED, status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             transaction.rollback()
