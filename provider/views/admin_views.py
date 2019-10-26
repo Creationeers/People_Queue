@@ -7,11 +7,11 @@ from rest_framework import exceptions, permissions, generics
 from rest_framework.views import APIView, status
 from rest_framework.response import Response
 from decouple import config
-from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST
+from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST, FORBIDDEN, DEVICE_MISMATCH
 from ..util.builders import ResponseBuilder
 from ..util.constants import UNIQUE_CONSTRAINT
 from ..models import Profile, Venue
-from ..serializers import VenueSerializer
+from ..serializers import VenueSerializer, DeviceSerializer
 
 ResponseBuilder = ResponseBuilder()
 logger = logging.getLogger('testlogger')
@@ -49,8 +49,9 @@ class RegisterUserView(APIView):
             return ResponseBuilder.get_response(message=MISSING_FIELD, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-class VenueView(generics.CreateAPIView):
+class VenueView(generics.ListCreateAPIView):
     serializer_class = VenueSerializer
+    queryset = Venue.objects.all()
 
     def post(self, request, *args, **kwargs):
         _venueSerializer = VenueSerializer(data=request.data, context={
@@ -65,8 +66,54 @@ class VenueView(generics.CreateAPIView):
             logger.error('{}'.format(_venueSerializer.errors))
             return ResponseBuilder.get_response(message=_venueSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, *args, **kwargs):
-        pass
+
+
+class VenueViewForAccount(generics.ListAPIView):
+    serializer_class = VenueSerializer
+
+    def get_queryset(self):
+        try:
+            return Venue.objects.filter(owner = Profile.objects.get(user = self.request.user))
+        except ObjectDoesNotExist:
+            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
+
+
+class DeviceView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            sid = transaction.savepoint()
+            venue = Venue.objects.get(id=request.data['venue'])
+            if venue.owner == Profile.objects.get(user=request.user):
+                _deviceSerializer = DeviceSerializer(data=request.data, context={
+                                                     'venue': venue}, partial=True)
+                if _deviceSerializer.is_valid():
+                    device = _deviceSerializer.save()
+                    logger.info(
+                        'Device \'{}\ created successfully'.format(device.name))
+                    return ResponseBuilder.get_response(message={'device_id': device.id}, status=status.HTTP_201_CREATED)
+                else:
+                    transaction.savepoint_rollback(sid)
+                    logger.error('{}'.format(_deviceSerializer.errors))
+                    return ResponseBuilder.get_response(message=_deviceSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                logger.info(
+                    'Unauthorized request from {}'.format(request.user))
+                return ResponseBuilder.get_response(message=FORBIDDEN, status=status.HTTP_401_UNAUTHORIZED)
+        except ObjectDoesNotExist:
+            transaction.savepoint_rollback(sid)
+            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
+
+
+class UpdateOccupationView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            venue = Venue.objects.get(id=kwargs['id'])
+            device = Device.objects.get(id=request.data['id'])
+            if device.venue is not venue:
+                return ResponseBuilder.get_response(message=DEVICE_MISMATCH, status=status.HTTP_401_UNAUTHORIZED)
+
+        except ObjectDoesNotExist:
+            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
 
 
 class DetailVenueView(APIView):

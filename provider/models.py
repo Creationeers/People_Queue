@@ -48,12 +48,6 @@ class Venue(models.Model):
         return '{}'.format(self.name)
 
 
-class Device(models.Model):
-    name = models.CharField(max_length=255, blank=False, null=False)
-    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-
 class Bonus(models.Model):
     amount = models.FloatField(validators=NOT_NEGATIVE_VALIDATOR)
     note = models.CharField(max_length=2047)
@@ -83,6 +77,11 @@ class Occupation_Past_Data(models.Model):
         verbose_name = 'Occupation Past Data'
         verbose_name_plural = 'Occupation Past Datas'
 
+
+class Device(models.Model):
+    name = models.CharField(max_length=255, blank=False, null=False)
+    venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class Opening_Hours(models.Model):
     weekday = models.CharField(max_length=10, choices=WEEKDAYS)

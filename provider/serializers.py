@@ -1,7 +1,13 @@
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from django.contrib.auth.models import User
-from .models import Venue, Address, Profile
+from .models import Venue, Address, Profile, Device
+
+
+class DeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = '__all__'
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -21,12 +27,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = ('id', )
 
 
 class VenueSerializer(serializers.ModelSerializer):
     address = AddressSerializer()
-    owner = ProfileSerializer()
+    #owner = ProfileSerializer()
 
     def create(self, validated_data):
         address_data = validated_data.pop('address')
