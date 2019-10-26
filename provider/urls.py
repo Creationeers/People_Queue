@@ -20,14 +20,14 @@ AUTH_PATTERNS = [
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token-refresh')
 ]
 
-CREATE_PATTERNS = [
+LIST_PATTERNS = [
     path('venue/', VenueView.as_view(), name='create-venue'),
     path('device/', DeviceView.as_view(), name='create-device')
 ]
 
 DETAIL_PATTERNS = [
     path('venue/<int:id>', DetailVenueView.as_view(), name='venue-detail'),
-    path('venue/poll/<int:id>/', UpdateOccupationView.as_view(),
+    path('venue/poll/', UpdateOccupationView.as_view(),
          name='update-occupation')
 ]
 
@@ -37,7 +37,7 @@ OWN_PATTERNS = [
 
 urlpatterns = [
     path('auth/', include(AUTH_PATTERNS)),
-    path('list/', include(CREATE_PATTERNS)),
+    path('list/', include(LIST_PATTERNS)),
     path('own/', include(OWN_PATTERNS)),
     path('detail/', include(DETAIL_PATTERNS)),
     path('api_doc/', include(SWAGGER_PATTERNS)),

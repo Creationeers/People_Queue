@@ -7,10 +7,10 @@ from rest_framework import exceptions, permissions, generics
 from rest_framework.views import APIView, status
 from rest_framework.response import Response
 from decouple import config
-from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST, FORBIDDEN, DEVICE_MISMATCH
+from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST, FORBIDDEN, TIMESTAMP_CREATED
 from ..util.builders import ResponseBuilder
 from ..util.constants import UNIQUE_CONSTRAINT
-from ..models import Profile, Venue
+from ..models import Profile, Venue, Device
 from ..serializers import VenueSerializer, DeviceSerializer
 
 ResponseBuilder = ResponseBuilder()
@@ -78,12 +78,22 @@ class VenueViewForAccount(generics.ListAPIView):
             return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
 
 
-class DeviceView(APIView):
+class DeviceView(generics.ListAPIView):
+    serializer_class = DeviceSerializer
+
+    def get_queryset(self):
+        try:
+            return Device.objects.filter(venue__owner = Profile.objects.get(user = self.request.user))
+        except ObjectDoesNotExist:
+            return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
+
+
     def post(self, request, *args, **kwargs):
         try:
             sid = transaction.savepoint()
             venue = Venue.objects.get(id=request.data['venue'])
-            if venue.owner == Profile.objects.get(user=request.user):
+            profile = Profile.objects.get(user=request.user)
+            if venue.owner == profile:
                 _deviceSerializer = DeviceSerializer(data=request.data, context={
                                                      'venue': venue}, partial=True)
                 if _deviceSerializer.is_valid():
@@ -99,18 +109,21 @@ class DeviceView(APIView):
                 logger.info(
                     'Unauthorized request from {}'.format(request.user))
                 return ResponseBuilder.get_response(message=FORBIDDEN, status=status.HTTP_401_UNAUTHORIZED)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
             transaction.savepoint_rollback(sid)
+            logger.error('{}'.format(e))
             return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
 
 
 class UpdateOccupationView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
     def post(self, request, *args, **kwargs):
         try:
-            venue = Venue.objects.get(id=kwargs['id'])
-            device = Device.objects.get(id=request.data['id'])
-            if device.venue is not venue:
-                return ResponseBuilder.get_response(message=DEVICE_MISMATCH, status=status.HTTP_401_UNAUTHORIZED)
+            device = Device.objects.get(id=request.data["id"])
+            count = request.data["count"]
+            return ResponseBuilder.get_response(message=TIMESTAMP_CREATED, status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist:
             return ResponseBuilder.get_response(message=DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)

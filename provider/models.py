@@ -67,7 +67,8 @@ class Reservation(models.Model):
 
 
 class Occupation_Past_Data(models.Model):
-    timestamp = models.DateTimeField(default=now, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    timestamp = models.DateTimeField(auto_now_add=True, editable=False)
     occupation = models.IntegerField()
     reservations = models.IntegerField()
     reservations_total_people = models.IntegerField()
@@ -82,6 +83,8 @@ class Device(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
     venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+
 
 class Opening_Hours(models.Model):
     weekday = models.CharField(max_length=10, choices=WEEKDAYS)
