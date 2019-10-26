@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from django.contrib.auth.models import User
-from .models import Venue, Address, Profile, Device, Occupation_Past_Data
+from .models import Venue, Address, Profile, Device, Occupation_Past_Data, Opening_Hours
 
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -51,4 +51,10 @@ class VenueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Venue
+        fields = '__all__'
+
+
+class Opening_HoursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Opening_Hours
         fields = '__all__'

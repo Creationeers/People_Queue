@@ -87,10 +87,10 @@ class Device(models.Model):
 
 class Opening_Hours(models.Model):
     weekday = models.CharField(max_length=10, choices=WEEKDAYS)
-    opening_morning = models.DateTimeField(blank=False, null=False)
-    closing_morning = models.DateTimeField(blank=True, null=True)
-    opening_noon = models.DateTimeField(blank=True, null=True)
-    closing_noon = models.DateTimeField(blank=False, null=False)
+    opening_morning = models.TimeField(blank=False, null=False)
+    closing_morning = models.TimeField(blank=True, null=True)
+    opening_noon = models.TimeField(blank=True, null=True)
+    closing_noon = models.TimeField(blank=False, null=False)
     note = models.CharField(max_length=2047)
     venue = models.ForeignKey(to=Venue, on_delete=models.CASCADE, null=False, blank=False)
 

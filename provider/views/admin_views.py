@@ -8,11 +8,11 @@ from rest_framework import exceptions, permissions, generics
 from rest_framework.views import APIView, status
 from rest_framework.response import Response
 from decouple import config
-from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, VENUE_CREATED, DOES_NOT_EXIST, FORBIDDEN, TIMESTAMP_CREATED
+from ..util.messages import USER_CREATED, USER_NAME_EXISTS, MISSING_FIELD, INTEGRITY_ERROR, VENUE_CREATED, FAILURE_CREATION,  DOES_NOT_EXIST, OPENING_HOURS_CREATED, FORBIDDEN, TIMESTAMP_CREATED
 from ..util.builders import ResponseBuilder
 from ..util.constants import UNIQUE_CONSTRAINT
-from ..models import Profile, Venue, Device, Occupation_Past_Data
-from ..serializers import VenueSerializer, DeviceSerializer
+from ..models import Profile, Venue, Device, Occupation_Past_Data, Opening_Hours
+from ..serializers import VenueSerializer, DeviceSerializer, Opening_HoursSerializer
 
 ResponseBuilder = ResponseBuilder()
 logger = logging.getLogger('testlogger')
@@ -126,7 +126,7 @@ class UpdateOccupationView(APIView):
             count = request.data["count"]
             data = Occupation_Past_Data.objects.create(
                 venue=device.venue, occupation=count)
-            venue = Venue.objects.get(id = device.venue.id)
+            venue = Venue.objects.get(id=device.venue.id)
             venue.current_occupation = count
             venue.save()
             return ResponseBuilder.get_response(message=TIMESTAMP_CREATED, status=status.HTTP_201_CREATED)
@@ -146,3 +146,31 @@ class DetailVenueView(APIView):
 
 class OccupationView(APIView):
     pass
+
+
+class OpeningHoursView(generics.ListAPIView):
+    serializer_class = Opening_HoursSerializer
+
+    def post(self, request, *args, **kwargs):
+        try:
+            sid = transaction.savepoint()
+            with transaction.atomic():
+                venue = Venue.objects.get(id=request.data['venue'])
+                _openingHoursSerializer = Opening_HoursSerializer(data=request.data, partial=True, context={
+                    'venue': venue
+                })
+                if _openingHoursSerializer.is_valid():
+                    _openingHoursSerializer.save()
+                    return ResponseBuilder.get_response(message=OPENING_HOURS_CREATED, status=status.HTTP_201_CREATED)
+                else:
+                    # transaction.savepoint_rollback(sid)
+                    logger.error(_openingHoursSerializer.error_messages)
+                    return ResponseBuilder.get_response(message=FAILURE_CREATION, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            transaction.savepoint_rollback(sid)
+            logger.error(e)
+            return ResponseBuilder.get_response(message=INTEGRITY_ERROR, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ValidationError as v:
+            transaction.savepoint_rollback(sid)
+            logger.error(v)
+            return ResponseBuilder.get_response(message=MISSING_FIELD, status=status.HTTP_406_NOT_ACCEPTABLE)

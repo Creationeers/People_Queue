@@ -3,7 +3,7 @@ from rest_framework_simplejwt import views as jwt_views
 import django_rq
 
 from .views import (RegisterUserView, VenueView, SchemaView, DetailVenueView,
-                    UpdateOccupationView, DeviceView, VenueViewForAccount)
+                    UpdateOccupationView, DeviceView, VenueViewForAccount, OpeningHoursView)
 
 SWAGGER_PATTERNS = [
     path('swagger(?<format>\.json|\.yaml)$', SchemaView.without_ui(
@@ -22,7 +22,8 @@ AUTH_PATTERNS = [
 
 LIST_PATTERNS = [
     path('venue/', VenueView.as_view(), name='create-venue'),
-    path('device/', DeviceView.as_view(), name='create-device')
+    path('device/', DeviceView.as_view(), name='create-device'),
+    path('openinghours/', OpeningHoursView.as_view(), name='opening-hours')
 ]
 
 DETAIL_PATTERNS = [
