@@ -54,7 +54,9 @@ class CreateVenueView(generics.CreateAPIView):
         return ResponseBuilder.get_response(message='Failed', status=status.HTTP_400_BAD_REQUEST)
 
 class DetailVenueView(APIView):
-    pass
+    def get(self, request, *args, **kwargs):
+        data = VenueSerializer(Venue.objects.get(id=kwargs['id'])).data
+        return ResponseBuilder.get_response_with_json(data, status.HTTP_200_OK)
 
 class OccupationView(APIView):
     pass
