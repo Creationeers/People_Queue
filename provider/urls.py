@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
 import django_rq
 
-from .views import (RegisterUserView, CreateVenueView, SchemaView, DetailVenueView)
+from .views import (RegisterUserView, VenueView, SchemaView, DetailVenueView)
 
 SWAGGER_PATTERNS = [
    path('swagger(?<format>\.json|\.yaml)$', SchemaView.without_ui(cache_timeout=0), name='schema-json'),
@@ -17,7 +17,7 @@ AUTH_PATTERNS = [
 ]
 
 CREATE_PATTERNS = [
-    path('venue/', CreateVenueView.as_view(), name='create-venue')
+    path('venue/', VenueView.as_view(), name='create-venue')
 ]
 
 DETAIL_PATTERNS = [

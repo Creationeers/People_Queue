@@ -44,6 +44,9 @@ class Venue(models.Model):
     real_time_queue_enabled = models.BooleanField(default=False, null=False, blank=False)
     address = models.ForeignKey(to=Address, on_delete=models.PROTECT)
 
+    def __str__(self):
+        return '{}'.format(self.name)
+
 
 class Device(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
