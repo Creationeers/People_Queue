@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils.timezone import now
-from .util.validators import NOT_NEGATIVE_VALIDATOR
+from .util.validators import NOT_NEGATIVE_VALIDATOR, ZIP_VALIDATOR
 from .util.enums import WEEKDAYS
 
 class Profile(models.Model):
@@ -21,9 +21,16 @@ def create_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 
+class Address(models.Model):
+    zip_code = models.IntegerField(blank=False, null=False, validators=ZIP_VALIDATOR)
+    city = models.CharField(max_length=127, null=False, blank=False)
+    street = models.CharField(max_length=127, null=False, blank=False)
+    house_number = models.IntegerField(blank=False, null=False)
+
+
 class Venue(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
-    description_shot = models.CharField(max_length=511, null=False, blank=False)
+    description_short = models.CharField(max_length=511, null=False, blank=False)
     description_long = models.CharField(max_length=4095, null=False, blank=False)
     current_occupation = models.IntegerField(default=0)
     max_occupation = models.IntegerField(default=0, null=False, blank=False)
@@ -31,6 +38,7 @@ class Venue(models.Model):
     owner = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
     reservations_enabled = models.BooleanField(default=False, null=False, blank=False)
     real_time_queue_enabled = models.BooleanField(default=False, null=False, blank=False)
+    address = models.ForeignKey(to=Address, on_delete=models.PROTECT)
 
 
 class Bonus(models.Model):
