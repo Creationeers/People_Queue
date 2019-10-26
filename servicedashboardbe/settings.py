@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import datetime
+from urllib.parse import urlparse
 from decouple import config
 from datetime import timedelta
 
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_rq',
     'provider'
 ]
 
@@ -156,3 +158,15 @@ if not DEBUG:
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
+
+url = urlparse(config('REDISCLOUD_URL'))
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': url.hostname,
+        'PORT': url.port,
+        'DB': 0,
+        'PASSWORD': url.password,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}

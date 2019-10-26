@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
+import django_rq
 from .views import (RegisterUserView)
 
 AUTH_PATTERNS = [
@@ -9,5 +10,6 @@ AUTH_PATTERNS = [
 
 urlpatterns = [
     path('auth/', include(AUTH_PATTERNS)),
-    path('register/', RegisterUserView.as_view(), name='register-user')
+    path('register/', RegisterUserView.as_view(), name='register-user'),
+    path('django-rq/', include('django_rq.urls'))
 ]
